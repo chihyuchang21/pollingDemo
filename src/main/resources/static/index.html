@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat Room</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+</head>
+
+<body>
+<div id="container">
+    <div>
+        <input type="text" id="name" placeholder="Your name here..." />
+        <input type="text" id="message" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+    </div>
+    <div id="messageArea"></div>
+</div>
+
+<script type="text/javascript">
+    var stompClient = null;
+
+    function setConnected(connected) {
+        document.getElementById('message').disabled = !connected;
+        if (connected) {
+            document.getElementById('messageArea').innerHTML = '';
+        }
+    }
+
+    function connect() {
+        var socket = new SockJS('/ws'); //這端點是websocket server的位置
+        stompClient = Stomp.over(socket); //把websocket對象包裹成stomp對象，以便用stomp協議通訊
+        stompClient.connect({}, function(frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/public', function(message) {
+                var receivedMsg = JSON.parse(message.body);
+                showMessage(receivedMsg.from, receivedMsg.text); // 傳入USERNAME和MESSAGE
+            });
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+
+    function sendMessage() {
+        var from = document.getElementById('name').value;
+        var text = document.getElementById('message').value;
+        if (text && stompClient) {
+            var chatMessage = {
+                from: from,
+                text: text
+            };
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+            document.getElementById('message').value = '';
+        }
+    }
+
+    function showMessage(username, message) {
+        var messageArea = document.getElementById('messageArea');
+        var messageElement = document.createElement('div');
+        var now = new Date();
+        var timeString = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds(); // 獲取現在時間
+        messageElement.className = 'message'; // 添加message類
+        messageElement.innerHTML = '<strong>' + username + '</strong>: ' + message + '<span>(' + timeString + ')</span>'; // 插入USERNAME、MESSAGE和時間
+        messageArea.appendChild(messageElement);
+        messageArea.scrollTop = messageArea.scrollHeight; // 捲動到底部
+    }
+</script>
+</body>
+</html>
