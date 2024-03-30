@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>STYLiSH 2024</title>
+</head>
+<body>
+<div id="root"></div>
+
+<div id="messageArea"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+
+
+<!-- SockJS and Stomp script -->
+<script>
+    const socket = new SockJS('http://localhost:8080/ws'); // 替換成您的 SockJS 伺服器的 URL
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/public', function(message) {
+            const msg = JSON.parse(message.body);
+            showMessage(msg.from, msg.text);
+        });
+    });
+
+    function showMessage(username, message) {
+        const messageArea = document.getElementById('messageArea');
+        const messageElement = document.createElement('div');
+        const now = new Date();
+        const timeString = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds(); // 獲取現在時間
+        messageElement.className = 'message'; // 添加message類
+        messageElement.innerHTML = '<strong>' + username + '</strong>: ' + message + '<span>(' + timeString + ')</span>'; // 插入USERNAME、MESSAGE和時間
+        messageArea.appendChild(messageElement);
+        messageArea.scrollTop = messageArea.scrollHeight; // 捲動到底部
+    }
+</script>
+
+
+
+</body>
+</html>
