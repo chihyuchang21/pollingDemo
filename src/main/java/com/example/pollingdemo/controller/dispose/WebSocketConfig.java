@@ -1,4 +1,4 @@
-package com.example.pollingdemo.controller;
+package com.example.pollingdemo.controller.dispose;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
