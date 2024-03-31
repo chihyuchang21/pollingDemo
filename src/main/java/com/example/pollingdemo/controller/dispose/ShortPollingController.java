@@ -1,4 +1,4 @@
-package com.example.pollingdemo.controller;
+package com.example.pollingdemo.controller.dispose;
 import com.example.pollingdemo.service.LongPollingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
